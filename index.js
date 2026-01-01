@@ -3,13 +3,15 @@ import connectDB from "./src/configs/connectDB.js";
 import notFoundRequest from "./src/middlewares/notFoundRequest.js";
 import { HOST, PORT } from "./src/configs/dotenvConfig.js";
 import todolistRoutes from "./src/routes/todolist.routes.js";
+import router from "./src/routes/auth.router.js";
 
 const app = express();
 app.use(express.json());
 
 connectDB();
 
-app.use("/", todolistRoutes);
+app.use("/todolist", todolistRoutes);
+app.use("/auth", router);
 
 // * handle Notfound Request
 app.use(notFoundRequest);

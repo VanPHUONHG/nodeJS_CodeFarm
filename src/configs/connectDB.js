@@ -1,14 +1,15 @@
 import mongoose from "mongoose";
 import { DB_URI } from "./dotenvConfig.js";
 
-function connectDB() {
-  mongoose
-    .connect(DB_URI)
-    .then(() => {
-      console.log(`Connected database successfully!`);
-    })
-    .catch(() => {
-      console.log(`Connect database failed!`);
-    });
-}
+const connectDB = async () => {
+  try {
+    await mongoose.connect(DB_URI);
+    console.log("✅ Connected database successfully!");
+  } catch (error) {
+    console.log("❌ Connect database failed!");
+    console.log("👉 Error:", error.message);
+    process.exit(1); // dừng app nếu DB fail
+  }
+};
+
 export default connectDB;
