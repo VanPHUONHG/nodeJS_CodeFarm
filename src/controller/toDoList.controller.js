@@ -1,89 +1,90 @@
 import TodoList from "../models/toDoList.model.js";
 import createResponse from "../utils/createResponse.js";
 
-//them mới sản phẩm
+//TẠO CÔNG VIỆC
 export const createTodolist = async (req, res) => {
   const todolist = await TodoList.create(req.body);
-  return res.status(201).json({
-    message: " them moi thanh cong",
-    data: todolist,
-  });
+  createResponse(res, 201, "Tạo công việc thành công", todolist);
 };
 
-//get in ra toan bo sản phẩm
+//LẤY DANH SÁCH CÔNG VIỆC
 export const getTodolist = async (req, res) => {
-  const data = await TodoList.find();
-  createResponse(res, 200, "successfully", data);
-};
+  const {
+    search,
+    isComplete,
+    priority,
+    category,
+    page = 1,
+    limit = 10,
+  } = req.query;
 
-export const getByid = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const skip = (page - 1) * limit;
 
-    const todolist = await TodoList.findById(id);
+  const query = {};
 
-    if (!todolist) {
-      return res.status(404).json({
-        message: "TodoList không tồn tại",
-      });
-    }
-
-    return res.status(200).json({
-      message: "lấy todo thành công",
-      data: todolist,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
+  // Tìm kiếm theo tên
+  if (search) {
+    query.title = {
+      $regex: search,
+      $options: "i",
+    };
   }
+
+  // Lọc theo trạng thái hoàn thành
+  if (isComplete !== undefined) {
+    query.isComplete = isComplete === "true";
+  }
+
+  // Lọc theo độ ưu tiên
+  if (priority) {
+    query.priority = priority;
+  }
+
+  // Lọc theo danh mục
+  if (category) {
+    query.category = category;
+  }
+
+  const data = await TodoList.find(query)
+    .populate("category")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(Number(limit));
+
+  createResponse(res, 200, "Lấy danh sách thành công", data);
 };
-//cap nhat sản phẩm
+
+// LẤY CHI TIẾT CÔNG VIỆC
+export const getById = async (req, res) => {
+  const todolist = await TodoList.findById(req.params.id).populate("category");
+
+  if (!todolist) {
+    return createResponse(res, 404, "TodoList không tồn tại");
+  }
+
+  createResponse(res, 200, "Lấy chi tiết thành công", todolist);
+};
+
+// CẬP NHẬT CÔNG VIỆC
 export const createUpdate = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const todolist = await TodoList.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
 
-    const todolist = await TodoList.findByIdAndUpdate(id, req.body, {
-      new: true,
-    });
-
-    if (!todolist) {
-      return res.status(404).json({
-        message: "TodoList không tồn tại",
-      });
-    }
-
-    return res.status(200).json({
-      message: "Cập nhật thành công",
-      data: todolist,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
+  if (!todolist) {
+    return createResponse(res, 404, "TodoList không tồn tại");
   }
+
+  createResponse(res, 200, "Cập nhật thành công", todolist);
 };
 
-//delete
+// XÓA CÔNG VIỆC
 export const deleteTodolist = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const todolist = await TodoList.findByIdAndDelete(req.params.id);
 
-    const todolist = await TodoList.findByIdAndDelete(id);
-
-    if (!todolist) {
-      return res.status(404).json({
-        message: "TodoList không tồn tại",
-      });
-    }
-
-    return res.status(200).json({
-      message: "delete thành công",
-      data: todolist,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: error.message,
-    });
+  if (!todolist) {
+    return createResponse(res, 404, "TodoList không tồn tại");
   }
+
+  createResponse(res, 200, "Xóa thành công", todolist);
 };

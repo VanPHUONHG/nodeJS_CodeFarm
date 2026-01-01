@@ -5,6 +5,7 @@ const todoListSchema = new Schema(
     title: {
       type: String,
       required: true,
+      trim: true,
     },
 
     description: {
@@ -14,11 +15,18 @@ const todoListSchema = new Schema(
     status: {
       type: String,
       enum: ["pending", "in_progress", "completed"],
+      default: "pending",
     },
 
     priority: {
       type: String,
       enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
     },
 
     dueDate: {
@@ -31,11 +39,12 @@ const todoListSchema = new Schema(
 
     isImportant: {
       type: Boolean,
+      default: false,
     },
   },
   {
-    versionKey: false,
     timestamps: true,
+    versionKey: false,
   }
 );
 
